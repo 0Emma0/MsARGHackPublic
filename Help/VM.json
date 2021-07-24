@@ -1,0 +1,101 @@
+
+    
+    // it is fragment of the code.
+      // it is fragment of the code.
+        // it is fragment of the code.
+          // it is fragment of the code.
+          // Look Line 61
+    {
+      "name": "[concat( parameters('virtualMachineName'),copyIndex())]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2018-06-01",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName'), copyIndex())]",
+        "[concat('Microsoft.Compute/availabilitySets/', parameters('AVName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSize')]"
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('AVName'))]"
+        },
+        "licenseType": "Windows_Server",
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( parameters('networkInterfaceName'), copyIndex()) )]"
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[concat( parameters('virtualMachineName'),copyIndex())]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "windowsConfiguration": {
+            "enableAutomaticUpdates": true,
+            "provisionVmAgent": true
+          }
+        },
+        "storageProfile": {
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat( concat( parameters('virtualMachineName') , copyIndex() ) ,'-OSDisk')]"
+          },
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2016-Datacenter",
+            "version": "latest"
+          }
+        }
+      },
+      "tags": {
+        "DemoIaC": "DeleteMe"
+      },
+      "copy": {
+        "count": 2,
+        "name": "VmHack"
+      },
+      "resources": [
+        {
+          //"apiVersion": "2018-10-01",
+          "apiVersion": "2018-06-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', concat( parameters('virtualMachineName'),copyIndex()))]"
+          ],
+          "location": "[parameters('location')]",
+          //"name": "Microsoft.Powershell.DSC",
+          "name": "Microsoft.Powershell",
+          "properties": {
+            "publisher": "Microsoft.Powershell",
+            "type": "DSC",
+            "typeHandlerVersion": "2.77",
+            "autoUpgradeMinorVersion": true,
+            "Settings": {
+              "configurationArguments": {
+                "RegistrationUrl": "[reference(resourceId('Microsoft.Automation/automationAccounts/', parameters('AutomationAccountName')), '2015-10-31').RegistrationUrl]",
+                "NodeConfigurationName": "[parameters('NodeConfigurationName')]"
+              }
+            },
+            "protectedSettings": {
+              "configurationArguments": {
+                "RegistrationKey": {
+                  "userName": "NOT_USED",
+                  "Password": "[listKeys(resourceId('Microsoft.Automation/automationAccounts/', parameters('AutomationAccountName')), '2015-10-31').keys[0].value]"
+                }
+              }
+            }
+          },
+          "tags": {
+            "displayName": "[concat( parameters('virtualMachineName'),copyIndex())]"
+          },
+          "type": "extensions"
+        }
+      ]
+    }
+      // it is fragment of the code.
+        // it is fragment of the code.
+          // it is fragment of the code.
+            // it is fragment of the code.
